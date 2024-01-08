@@ -9,15 +9,16 @@ class DouboleConv(nn.Module):
         super().__init__()
         self.conv1 = nn.Conv2d(input_dim, output_dim, 3, padding=1)
         self.conv2 = nn.Conv2d(output_dim, output_dim, 3, padding=1)
-
+        self.b1 = nn.BatchNorm2d(output_dim)
+        self.b2 = nn.BatchNorm2d(output_dim)
     def forward(self, x):
-        x = F.relu(self.conv1(x))
-        x = F.relu(self.conv2(x))
-        return x
+        x = F.silu(self.b1(self.conv1(x)))
+        h = F.silu(self.b2(self.conv1(x)))
+        return x + h
 
 class DownSample(nn.Module):
     def __init__(self) -> None:
-        super().__init__()
+        super().__init__()  
         self.pool = nn.MaxPool2d(2)
     def forward(self, x):
         x = self.pool(x)
@@ -27,8 +28,10 @@ class UpSample(nn.Module):
     def __init__(self, input_dim, output_dim) -> None:
         super().__init__()
         self.up = nn.ConvTranspose2d(input_dim, output_dim, 2, stride=2)
+        self.b1 = nn.BatchNorm2d(output_dim)
     def forward(self, x):
         x = self.up(x)
+        x = F.silu(self.b1(x))
         return x
 
 class CropAndConcat(nn.Module):
