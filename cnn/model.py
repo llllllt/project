@@ -13,7 +13,7 @@ class DouboleConv(nn.Module):
         self.b2 = nn.BatchNorm2d(output_dim)
     def forward(self, x):
         x = F.silu(self.b1(self.conv1(x)))
-        h = F.silu(self.b2(self.conv1(x)))
+        h = F.silu(self.b2(self.conv2(x)))
         return x + h
 
 class DownSample(nn.Module):
